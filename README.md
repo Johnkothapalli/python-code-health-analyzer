@@ -144,6 +144,8 @@ with an issue so the design can be agreed before implementation.
 The public direction of the project is recorded in [ROADMAP.md](ROADMAP.md), and released
 changes are recorded in [CHANGELOG.md](CHANGELOG.md).
 
+Release maintainers should follow the token-free [release process](RELEASING.md).
+
 For usage questions, use
 [GitHub Discussions](https://github.com/Johnkothapalli/python-code-health-analyzer/discussions).
 Report vulnerabilities through the private process in [SECURITY.md](SECURITY.md).
