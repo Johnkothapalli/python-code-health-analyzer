@@ -92,7 +92,9 @@ def test_invalid_utf8_produces_ch000_finding(tmp_path: Path) -> None:
     assert finding.path == "bad_encoding.py"
 
 
-def test_unreadable_file_produces_ch000_finding(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_unreadable_file_produces_ch000_finding(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     path = tmp_path / "unreadable.py"
     path.write_text("x = 1\n", encoding="utf-8")
 
