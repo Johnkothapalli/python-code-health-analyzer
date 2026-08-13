@@ -29,14 +29,14 @@ algorithm to report circular imports.
 
 Python 3.11 or newer is required.
 
-Install the published package:
+The package is not on PyPI yet. Install the `v0.1.0` release directly from GitHub:
 
 ```bash
-python -m pip install python-code-health-analyzer
+python -m pip install "https://github.com/Johnkothapalli/python-code-health-analyzer/releases/download/v0.1.0/python_code_health_analyzer-0.1.0-py3-none-any.whl"
 code-health scan .
 ```
 
-Before the first PyPI release is published, install the CLI directly from GitHub instead:
+To follow the latest `main` branch instead:
 
 ```bash
 python -m pip install "git+https://github.com/Johnkothapalli/python-code-health-analyzer.git"
