@@ -1,0 +1,44 @@
+name: Rule proposal
+description: Propose a new static-analysis rule with examples and a false-positive assessment.
+title: "rule: "
+labels:
+  - rule-proposal
+body:
+  - type: textarea
+    id: pattern
+    attributes:
+      label: Pattern to detect
+      description: Explain why the pattern affects correctness, security, or maintainability.
+    validations:
+      required: true
+  - type: textarea
+    id: unsafe
+    attributes:
+      label: Code that should produce a finding
+      render: python
+    validations:
+      required: true
+  - type: textarea
+    id: safe
+    attributes:
+      label: Similar code that should not produce a finding
+      render: python
+    validations:
+      required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Proposed severity
+      options:
+        - info
+        - low
+        - medium
+        - high
+    validations:
+      required: true
+  - type: textarea
+    id: false-positives
+    attributes:
+      label: False-positive risks and existing-tool overlap
+    validations:
+      required: true

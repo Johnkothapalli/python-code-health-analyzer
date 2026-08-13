@@ -5,7 +5,10 @@ from __future__ import annotations
 import json
 from typing import Any
 
+from code_health import __version__
 from code_health.models import ScanReport, Severity
+
+PROJECT_URL = "https://github.com/Johnkothapalli/python-code-health-analyzer"
 
 RULES = {
     "CH000": "Source could not be parsed",
@@ -77,8 +80,8 @@ def sarif_payload(report: ScanReport) -> dict[str, Any]:
                 "tool": {
                     "driver": {
                         "name": "python-code-health-analyzer",
-                        "version": "0.1.0",
-                        "informationUri": "https://github.com/",
+                        "version": __version__,
+                        "informationUri": PROJECT_URL,
                         "rules": [
                             {
                                 "id": rule_id,

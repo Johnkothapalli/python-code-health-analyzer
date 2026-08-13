@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Usage questions
+    url: https://github.com/Johnkothapalli/python-code-health-analyzer/discussions
+    about: Ask for help and discuss usage in GitHub Discussions.
+  - name: Security report
+    url: https://github.com/Johnkothapalli/python-code-health-analyzer/security/advisories/new
+    about: Report a vulnerability privately. Do not disclose it in a public issue.
