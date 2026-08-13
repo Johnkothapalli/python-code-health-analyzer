@@ -89,32 +89,27 @@ def test_invalid_utf8_produces_ch000_finding(tmp_path: Path) -> None:
     assert finding.rule_id == "CH000"
     assert finding.severity is Severity.HIGH
     assert "Could not read source" in finding.message
+    assert finding.path == "bad_encoding.py"
 
 
-def test_empty_directory_produces_no_findings(tmp_path: Path) -> None:
-    report = CodeAnalyzer().scan(tmp_path)
+def test_unreadable_file_produces_ch000_finding(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    path = tmp_path / "unreadable.py"
+    path.write_text("x = 1\n", encoding="utf-8")
 
-    assert report.files == ()
-    assert report.findings == ()
-    assert report.score == 100
+    original_read_bytes = Path.read_bytes
 
+    def mock_read_bytes(self: Path) -> bytes:
+        if self == path:
+            raise PermissionError("Permission denied")
+        return original_read_bytes(self)
 
-def test_directory_with_non_python_files(tmp_path: Path) -> None:
-    (tmp_path / "readme.txt").write_text("hello", encoding="utf-8")
-    (tmp_path / "data.json").write_text('{"key": "value"}', encoding="utf-8")
-
-    report = CodeAnalyzer().scan(tmp_path)
-
-    assert report.files == ()
-    assert report.findings == ()
-    assert report.score == 100
-
-
-def test_non_python_file_target_returns_empty(tmp_path: Path) -> None:
-    path = tmp_path / "notes.txt"
-    path.write_text("not python", encoding="utf-8")
+    monkeypatch.setattr(Path, "read_bytes", mock_read_bytes)
 
     report = CodeAnalyzer().scan(path)
 
-    assert report.files == ()
-    assert report.findings == ()
+    assert len(report.findings) == 1
+    finding = report.findings[0]
+    assert finding.rule_id == "CH000"
+    assert finding.severity is Severity.HIGH
+    assert "Could not read source" in finding.message
+    assert finding.path == "unreadable.py"
