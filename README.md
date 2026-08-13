@@ -1,12 +1,15 @@
 # Python Code Health Analyzer
 
+[![CI](https://github.com/Johnkothapalli/python-code-health-analyzer/actions/workflows/ci.yml/badge.svg)](https://github.com/Johnkothapalli/python-code-health-analyzer/actions/workflows/ci.yml)
+[![MIT license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/)
+
 A fast, dependency-free static analyzer that inspects Python source without executing it. It
 finds correctness and security risks, measures cyclomatic complexity, detects internal import
 cycles, and emits reports for humans or CI systems.
 
-This is a portfolio project built to demonstrate production-oriented Python: AST traversal,
-immutable data models, concurrent execution, content-addressed caching, graph algorithms,
-typed APIs, packaging, automated tests, and continuous integration.
+The analyzer is in alpha. Reports are deterministic and suitable for local development or CI,
+but the rule set is intentionally small and does not replace a type checker or a security audit.
 
 ## What it detects
 
@@ -26,7 +29,25 @@ algorithm to report circular imports.
 
 Python 3.11 or newer is required.
 
+Install the published package:
+
 ```bash
+python -m pip install python-code-health-analyzer
+code-health scan .
+```
+
+Before the first PyPI release is published, install the CLI directly from GitHub instead:
+
+```bash
+python -m pip install "git+https://github.com/Johnkothapalli/python-code-health-analyzer.git"
+code-health scan .
+```
+
+For local development:
+
+```bash
+git clone https://github.com/Johnkothapalli/python-code-health-analyzer.git
+cd python-code-health-analyzer
 python -m venv .venv
 # Windows: .venv\Scripts\activate
 # macOS/Linux: source .venv/bin/activate
@@ -60,11 +81,19 @@ code-health scan . --fail-on medium
 
 # Tune concurrency and complexity policy
 code-health scan . --workers 8 --max-complexity 12
+
+# Exclude project-specific generated or vendored directories
+code-health scan . --exclude-dir generated --exclude-dir vendor
 ```
 
 The default SQLite cache is stored at `.code-health/cache.db`. Cache entries are keyed by the
 source SHA-256, active rules, and complexity threshold, so changing code or policy invalidates
 the entry. Use `--no-cache` for a clean scan.
+
+The command returns `0` when the scan completes and no finding meets `--fail-on`. It returns `1`
+when a finding reaches the configured threshold. Invalid arguments or a missing target produce a
+usage error. This makes `--fail-on` suitable for CI without treating lower-severity findings as a
+failed scan.
 
 ## Architecture
 
@@ -105,20 +134,19 @@ code-health scan . --no-cache --fail-on high
 The GitHub Actions matrix runs linting, strict type checking, tests with coverage, and a
 self-scan on Python 3.11 and 3.13 across Linux and Windows.
 
-## Interview discussion guide
+## Contributing
 
-If you use this project in an interview, be ready to explain these choices in your own words:
+Issues and pull requests are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md), browse the
+[`good first issue`](https://github.com/Johnkothapalli/python-code-health-analyzer/labels/good%20first%20issue)
+label, or read [the rule-authoring guide](docs/adding-a-rule.md). Larger changes should begin
+with an issue so the design can be agreed before implementation.
 
-1. **Why AST instead of regex?** The parser understands Python syntax and source locations,
-   avoiding many multiline and nesting errors caused by text matching.
-2. **Why threads?** Reading many small files is partly I/O-bound. Threads keep the design
-   simple, while deterministic sorting removes scheduling differences from the output.
-3. **Why not execute imports?** Static analysis must not trigger application side effects or
-   run untrusted repository code.
-4. **How is cache correctness maintained?** The key combines a source digest with analysis
-   policy. A code or configuration change produces a miss.
-5. **What would you build next?** Configuration through `pyproject.toml`, plugin discovery,
-   changed-files-only scans, richer data-flow analysis, and benchmark-driven process workers.
+The public direction of the project is recorded in [ROADMAP.md](ROADMAP.md), and released
+changes are recorded in [CHANGELOG.md](CHANGELOG.md).
+
+For usage questions, use
+[GitHub Discussions](https://github.com/Johnkothapalli/python-code-health-analyzer/discussions).
+Report vulnerabilities through the private process in [SECURITY.md](SECURITY.md).
 
 ## Limitations
 

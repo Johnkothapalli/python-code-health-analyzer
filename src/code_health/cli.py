@@ -6,6 +6,7 @@ import argparse
 from collections.abc import Sequence
 from pathlib import Path
 
+from code_health import __version__
 from code_health.analyzer import AnalyzerConfig, CodeAnalyzer
 from code_health.cache import SQLiteCache
 from code_health.models import ScanReport, Severity
@@ -17,7 +18,7 @@ def _parser() -> argparse.ArgumentParser:
         prog="code-health",
         description="Analyze Python code health without executing the target project.",
     )
-    parser.add_argument("--version", action="version", version="%(prog)s 0.1.0")
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     subparsers = parser.add_subparsers(dest="command", required=True)
     scan = subparsers.add_parser("scan", help="scan a Python file or directory")
     scan.add_argument("target", nargs="?", default=".", type=Path)
@@ -25,6 +26,13 @@ def _parser() -> argparse.ArgumentParser:
     scan.add_argument("--output", type=Path, help="write the report to a file")
     scan.add_argument("--max-complexity", type=int, default=10)
     scan.add_argument("--workers", type=int, default=None)
+    scan.add_argument(
+        "--exclude-dir",
+        action="append",
+        default=[],
+        metavar="NAME",
+        help="exclude a directory name; repeat the option to exclude multiple names",
+    )
     scan.add_argument("--no-cache", action="store_true")
     scan.add_argument("--cache", type=Path, default=Path(".code-health/cache.db"))
     scan.add_argument(
@@ -59,9 +67,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         raise SystemExit(f"Target does not exist: {args.target}")
 
     defaults = AnalyzerConfig()
+    excluded_dirs = defaults.excluded_dirs | frozenset(args.exclude_dir)
     config = AnalyzerConfig(
         max_complexity=args.max_complexity,
         workers=args.workers or defaults.workers,
+        excluded_dirs=excluded_dirs,
     )
     cache = None if args.no_cache else SQLiteCache(args.cache)
     report = CodeAnalyzer(config, cache=cache).scan(args.target)

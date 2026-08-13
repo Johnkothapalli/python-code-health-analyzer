@@ -1,0 +1,49 @@
+name: Bug report
+description: Report reproducible incorrect analyzer or CLI behavior.
+title: "bug: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: Do not include proprietary code, credentials, or an undisclosed vulnerability.
+  - type: input
+    id: version
+    attributes:
+      label: Analyzer version
+      placeholder: "0.1.0 or commit SHA"
+    validations:
+      required: true
+  - type: input
+    id: python
+    attributes:
+      label: Python and operating-system version
+      placeholder: "Python 3.13.1 on Windows 11"
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal safe reproduction
+      description: Include the command and the smallest non-sensitive Python sample that reproduces the behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched existing issues and removed sensitive information.
+          required: true

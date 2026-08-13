@@ -8,26 +8,37 @@ version = "0.1.0"
 description = "A dependency-free Python static analyzer for code health, complexity, and import cycles."
 readme = "README.md"
 requires-python = ">=3.11"
-license = { text = "MIT" }
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [{ name = "John Kothapalli" }]
+maintainers = [{ name = "Kothapalli Johnvaraprasad" }]
 keywords = ["python", "static-analysis", "ast", "code-quality", "cli"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Environment :: Console",
-  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Topic :: Software Development :: Quality Assurance",
+  "Typing :: Typed",
 ]
+
+[project.urls]
+Homepage = "https://github.com/Johnkothapalli/python-code-health-analyzer"
+Repository = "https://github.com/Johnkothapalli/python-code-health-analyzer"
+Issues = "https://github.com/Johnkothapalli/python-code-health-analyzer/issues"
+Changelog = "https://github.com/Johnkothapalli/python-code-health-analyzer/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = [
+  "build>=1.2",
   "mypy>=1.15",
   "pytest>=8.3",
   "pytest-cov>=6.0",
   "ruff>=0.11",
+  "twine>=6.0",
 ]
 
 [project.scripts]
