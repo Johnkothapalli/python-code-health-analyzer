@@ -27,6 +27,7 @@ Run the complete local gate before submitting a pull request:
 
 ```bash
 ruff check .
+ruff format --check .
 mypy
 pytest
 code-health scan . --no-cache --fail-on high

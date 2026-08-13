@@ -10,6 +10,7 @@ Describe the focused solution and any compatibility considerations.
 
 - [ ] Tests added or updated where behavior changed
 - [ ] `ruff check .`
+- [ ] `ruff format --check .`
 - [ ] `mypy`
 - [ ] `pytest`
 - [ ] `code-health scan . --no-cache --fail-on high`

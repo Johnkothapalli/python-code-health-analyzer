@@ -126,6 +126,7 @@ Key design decisions:
 
 ```bash
 ruff check .
+ruff format --check .
 mypy
 pytest
 code-health scan . --no-cache --fail-on high
