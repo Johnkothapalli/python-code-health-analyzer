@@ -87,3 +87,69 @@ def test_sarif_uses_release_metadata(tmp_path: Path) -> None:
     assert payload["version"] == "2.1.0"
     assert driver["version"] == __version__
     assert driver["informationUri"].endswith("/python-code-health-analyzer")
+
+
+@pytest.mark.parametrize("option", ["--workers", "--max-complexity"])
+@pytest.mark.parametrize("value", ["0", "-1"])
+def test_cli_rejects_non_positive_numeric_options(
+    tmp_path: Path, capsys: object, option: str, value: str
+) -> None:
+    """Zero and negative values are usage errors, not tracebacks or silent defaults."""
+    source = tmp_path / "clean.py"
+    source.write_text("answer = 42\n", encoding="utf-8")
+
+    with pytest.raises(SystemExit) as exit_info:
+        main(["scan", str(source), option, value, "--no-cache"])
+
+    assert exit_info.value.code == 2
+    stderr = capsys.readouterr().err  # type: ignore[attr-defined]
+    assert f"argument {option}" in stderr
+    assert "must be at least 1" in stderr
+
+
+@pytest.mark.parametrize("option", ["--workers", "--max-complexity"])
+def test_cli_rejects_non_integer_numeric_options(
+    tmp_path: Path, capsys: object, option: str
+) -> None:
+    source = tmp_path / "clean.py"
+    source.write_text("answer = 42\n", encoding="utf-8")
+
+    with pytest.raises(SystemExit) as exit_info:
+        main(["scan", str(source), option, "many", "--no-cache"])
+
+    assert exit_info.value.code == 2
+    assert "expected an integer" in capsys.readouterr().err  # type: ignore[attr-defined]
+
+
+@pytest.mark.parametrize(("option", "value"), [("--workers", "2"), ("--max-complexity", "1")])
+def test_cli_accepts_explicit_positive_values(
+    tmp_path: Path, capsys: object, option: str, value: str
+) -> None:
+    source = tmp_path / "clean.py"
+    source.write_text("answer = 42\n", encoding="utf-8")
+
+    assert main(["scan", str(source), option, value, "--no-cache"]) == 0
+
+
+def test_cli_without_numeric_options_keeps_defaults(tmp_path: Path, capsys: object) -> None:
+    """Omitting both options must still fall back to AnalyzerConfig's defaults."""
+    from code_health.analyzer import AnalyzerConfig
+    from code_health.cli import _parser
+
+    source = tmp_path / "clean.py"
+    source.write_text("answer = 42\n", encoding="utf-8")
+    parsed = _parser().parse_args(["scan", str(source), "--no-cache"])
+
+    assert parsed.workers is None
+    assert parsed.max_complexity == AnalyzerConfig().max_complexity
+    assert main(["scan", str(source), "--no-cache"]) == 0
+
+
+def test_analyzer_config_still_validates_for_api_callers() -> None:
+    """CLI validation is additive; direct API callers keep their own guard."""
+    from code_health.analyzer import AnalyzerConfig
+
+    with pytest.raises(ValueError, match="workers must be at least 1"):
+        AnalyzerConfig(workers=0)
+    with pytest.raises(ValueError, match="max_complexity must be at least 1"):
+        AnalyzerConfig(max_complexity=0)

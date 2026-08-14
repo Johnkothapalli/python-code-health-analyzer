@@ -13,6 +13,22 @@ from code_health.models import ScanReport, Severity
 from code_health.reporters import render_json, render_sarif, render_text
 
 
+def _positive_int(value: str) -> int:
+    """argparse type for options that must be 1 or greater.
+
+    Raising ArgumentTypeError lets argparse report the problem as a usage error
+    with exit code 2, instead of the value reaching AnalyzerConfig and surfacing
+    as a traceback (--max-complexity) or being silently discarded (--workers).
+    """
+    try:
+        number = int(value)
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"expected an integer, got {value!r}") from None
+    if number < 1:
+        raise argparse.ArgumentTypeError(f"must be at least 1, got {number}")
+    return number
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="code-health",
@@ -24,8 +40,8 @@ def _parser() -> argparse.ArgumentParser:
     scan.add_argument("target", nargs="?", default=".", type=Path)
     scan.add_argument("--format", choices=("text", "json", "sarif"), default="text")
     scan.add_argument("--output", type=Path, help="write the report to a file")
-    scan.add_argument("--max-complexity", type=int, default=10)
-    scan.add_argument("--workers", type=int, default=None)
+    scan.add_argument("--max-complexity", type=_positive_int, default=10)
+    scan.add_argument("--workers", type=_positive_int, default=None)
     scan.add_argument(
         "--exclude-dir",
         action="append",
@@ -70,7 +86,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     excluded_dirs = defaults.excluded_dirs | frozenset(args.exclude_dir)
     config = AnalyzerConfig(
         max_complexity=args.max_complexity,
-        workers=args.workers or defaults.workers,
+        # `or` here would also swallow a falsy-but-explicit 0; _positive_int now
+        # rejects that, but None (the option omitted) is the only fallback case.
+        workers=defaults.workers if args.workers is None else args.workers,
         excluded_dirs=excluded_dirs,
     )
     cache = None if args.no_cache else SQLiteCache(args.cache)
