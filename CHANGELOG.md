@@ -6,6 +6,10 @@ All notable user-facing changes are documented here. The format follows
 
 ## Unreleased
 
+### Fixed
+
+- Treat malformed cached reports as cache misses so analysis can replace unusable rows.
+
 ## 0.1.0 - 2026-08-13
 
 ### Added

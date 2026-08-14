@@ -37,15 +37,25 @@ class SQLiteCache:
             )
 
     def get(self, path: Path, cache_key: str) -> FileReport | None:
+        resolved_path = str(path.resolve())
         with closing(self._connect()) as connection:
             row = connection.execute(
                 "SELECT payload FROM reports WHERE path = ? AND digest = ?",
-                (str(path.resolve()), cache_key),
+                (resolved_path, cache_key),
             ).fetchone()
-        if row is None:
-            return None
-        payload = json.loads(str(row[0]))
-        return FileReport.from_dict(payload).as_cached()
+            if row is None:
+                return None
+            raw_payload = str(row[0])
+            try:
+                payload = json.loads(raw_payload)
+                return FileReport.from_dict(payload).as_cached()
+            except (json.JSONDecodeError, KeyError, TypeError, ValueError):
+                with connection:
+                    connection.execute(
+                        "DELETE FROM reports WHERE path = ? AND digest = ? AND payload = ?",
+                        (resolved_path, cache_key, raw_payload),
+                    )
+                return None
 
     def put(self, path: Path, cache_key: str, report: FileReport) -> None:
         payload = json.dumps(report.to_dict(), separators=(",", ":"), sort_keys=True)
