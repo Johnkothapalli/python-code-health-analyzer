@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import ast
 import hashlib
+import io
 import os
+import tokenize
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from functools import partial
@@ -18,11 +20,28 @@ from code_health.rules import default_rules
 from code_health.rules.base import Rule
 
 
+def _decode_source(raw: bytes) -> str:
+    """Decode source bytes using the file's own encoding declaration (PEP 263).
+
+    ``tokenize.detect_encoding`` is the same detection CPython itself uses: it
+    reads the first two lines for a coding cookie, honours a UTF-8 BOM, and
+    defaults to UTF-8. It raises SyntaxError for an unknown encoding name or a
+    BOM that contradicts the cookie, which the caller turns into CH000.
+
+    The raw bytes are left untouched so the digest keeps hashing what is on
+    disk, not the decoded text.
+    """
+    encoding, _ = tokenize.detect_encoding(io.BytesIO(raw).readline)
+    return raw.decode(encoding)
+
+
 def _read_source(path: Path, display_path: str) -> tuple[bytes, str] | FileReport:
     try:
         raw = path.read_bytes()
-        return raw, raw.decode("utf-8")
-    except (OSError, UnicodeError) as error:
+        return raw, _decode_source(raw)
+    # SyntaxError covers an unknown or self-contradicting encoding declaration;
+    # UnicodeError covers bytes that the declared encoding can't actually decode.
+    except (OSError, UnicodeError, SyntaxError) as error:
         return FileReport(
             path=display_path,
             digest="",
