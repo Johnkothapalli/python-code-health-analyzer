@@ -31,6 +31,7 @@ def test_cli_writes_json_and_honors_failure_threshold(tmp_path: Path) -> None:
     assert payload["summary"]["findings"] == 1
     assert payload["files"][0]["findings"][0]["rule_id"] == "CH002"
 
+
 def test_clean_cli_text_output(tmp_path: Path, capsys: object) -> None:
     source = tmp_path / "clean.py"
     source.write_text("answer = 42\n", encoding="utf-8")
@@ -100,6 +101,8 @@ def test_sarif_uses_release_metadata(tmp_path: Path) -> None:
     assert payload["version"] == "2.1.0"
     assert driver["version"] == __version__
     assert driver["informationUri"].endswith("/python-code-health-analyzer")
+
+
 def test_directory_with_only_non_python_files_has_stable_cli_output(
     tmp_path: Path, capsys: object
 ) -> None:
@@ -116,9 +119,8 @@ def test_directory_with_only_non_python_files_has_stable_cli_output(
     assert "Scanned 0 file(s); found 0 issue(s)." in output
     assert "No code-health issues detected." in output
 
-def test_direct_non_python_file_has_stable_cli_output(
-    tmp_path: Path, capsys: object
-) -> None:
+
+def test_direct_non_python_file_has_stable_cli_output(tmp_path: Path, capsys: object) -> None:
     source = tmp_path / "hello.txt"
     source.write_text("hello\n", encoding="utf-8")
 
@@ -130,4 +132,3 @@ def test_direct_non_python_file_has_stable_cli_output(
     assert "Code health score: 100/100" in output
     assert "Scanned 0 file(s); found 0 issue(s)." in output
     assert "No code-health issues detected." in output
-    
